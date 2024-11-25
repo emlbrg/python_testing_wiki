@@ -1,7 +1,7 @@
 Testing Python code is important to help ensure your code runs as expected and is maintainable over time. 
 
    * [Best Practiced](#best-practiced)
-      * [1. <strong>Write Unit Tests</strong>](#1-write-unit-tests)
+      * [1. <strong>Unit Testing</strong>](#1-write-unit-tests)
       * [2. <strong>Use Test-Driven Development (TDD)</strong>](#2-use-test-driven-development-tdd)
       * [3. <strong>Use Code Coverage Tools</strong>](#3-use-code-coverage-tools)
       * [4. <strong>Organize Tests Well</strong>](#4-organize-tests-well)
@@ -31,15 +31,183 @@ Testing Python code is important to help ensure your code runs as expected and i
 
 ## Best Practiced ##
 
-### 1. **Write Unit Tests**
-   - **Start with Unit Tests**: These tests focus on small parts of your code, typically individual functions or methods. Use the **`unittest`** module in the Python standard library or popular alternatives like **`pytest`**.
+### 1. **Unit Testing**
+   - **What is a Unit Test**: Units tests focus on small parts of the code (an "isolated" piece of code if you will, which does one thing and one thing only), typically individual functions or methods. Use the **`unittest`** module in the Python standard library or popular alternatives like **`pytest`**.
+
+   In Unit Tests you can also:
    - **Mock Dependencies**: Use libraries like **`unittest.mock`** or **`pytest-mock`** to replace parts of the system that your code interacts with (e.g., APIs, databases) so you can isolate the function you're testing.
-   - **Assert Statements**: Write clear assertions that check for expected outcomes.
+   - **Assert Statements**: Write clear assertions that check for expected outcomes as demonstrated below with assertion functions.
+
+   Here is a fun example of unit test. We want to write a function that calculates the area of a circle. We can write it like this:
+   ```python
+   from math import pi
+
+   def circle_area(r):
+    return pi * (r ** 2)
+   ```
+   This may seems fine and dandy until we choose violence and run the funtion with the following values:
+   ```python
+   radii = [2, 0, -3, 2 + 5j, True, "radius"]
+   message = "Area of circles with r = {radius} is {area}."
+
+   for p in radii:
+       A = circle_area(r)
+       print (message. format (radius=r, area=A))
+   ```
+   At this point, we get the following output:
+   ```
+   Area of circles with r = 2 is 12.566370614359172.
+   Area of circles with r = 0 is 0.0.
+   Area of circles with r = -3 is 28.274333882308138.                           # negative radius?!
+   Area of circles with r = (2+5j) is (-65.97344572538566+62.83185307179586j).  # tuple?!
+   Area of circles with r = True is 3.141592653589793.                          # bool?!
+   Traceback (most recent call last):                                           # get this error becasue you used a string
+   File "circles.py", line 11, in < module >
+     A = circle_area(r) 
+   File "circles.py", line 4, in circle_area
+     return pi*(p**2)
+   TypeError: unsupported operand type(s) for ** or pow(): 'str' and 'int'
+   ```
+
+To avoid this, we can write unit tests to test the function. First, we create a separate file with the same name as the file which contains the function to test followed by _test.py. For instance, let's say that we have called out first file `circles.py` In this new file `circles_test.py`, we write this:
+
+```python
+import unittest
+from circles import circle_area
+from math import pi
+
+class TestCircleArea (unittest. TestCase) :
+    def test_area (self) :
+    """ 
+    Test areas when radius >= 0 for several circles using `assertAlmostEqual`. The first value is the output of the circle_area function, and the second is the correct answer. The test compares the two up to the 7th decimal place.
+    """
+        self.assertAlmostEqual (circle_area(1), pi)  
+        self. assertAlmostEqual (circle_area(0), 0)
+        self.assertAlmostEqual(circle_area(2.1), pi * 2.1**2)
+        # If any of these comparisons fail, than the function fails the test.
+```
+To actually run this, we need to open the terminal and type `python -m unittest test_circles` where -m means that we are telling python to run the unittest module as a script.
+
+Now let's see how we can handle invalid input. We write a new test in `circles_test.py`:
+```python
+def test_values (self) :
+"""
+Make sure value errors are raised when necessary. The first agrument is the exception class that should be raised, the second is the  function, the remaining are arguments to the function.
+"""
+    self.assertRaises (ValueError, circle_area, -2)
+```
+In this case, if we try to compute the area of a circle of radius -2, the function should raise a `ValueError` and in fact once we run the unit test, we get a screenfull of failure messages (really python, you made your point).
+```
+python -m unittest
+.F
+ニニニニニニニニニニニニニニニニニニニニニニニニニニニ
+FAIL: test_values (test_circles. TestCircleArea)
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+Traceback (most recent call last): 
+  File "test_circles.py", line 14, in test_values
+    self.assertRaises (ValueError, circle_area, -2)
+AssertionError: ValueError not raised by circle_area
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+Ran 2 tests in 0.000s
+
+FAILED (failures=1)
+```
+BUT a `ValueError` was not raised when the input was negative so let's go back to `circles.py`. If a negative number is used, we need to raise a `ValueError` so that before computing the area we check to see if it's negative. If so, the error and error message are raised.
+```python
+from math import pi
+
+def circle_area (r) :
+    if r < 0:
+        raise ValueError ("The radius cannot be negative. ")
+    return pi*(n**2)
+```
+Now, if you run the unit test the error should be correctly raised.
+
+To complete the testing and make sure a `TypeError` is raised when the input is not a real number, we go back to our resting script:
+```python
+import unittest
+from circles import circle_area
+from math import pi
+class TestCircleArea (unittest. TestCase) :
+    def test_area (self) :
+    """ 
+    Test areas when radius >= 0 for several circles. The first value is the out of the circle_area function, and the second is the correct answer. The test compares the two up to the 7th decimal place.
+    """
+        self.assertAlmostEqual (circle_area(1), pi)  
+        self. assertAlmostEqual (circle_area(0), 0)
+        self.assertAlmostEqual(circle_area(2.1), pi * 2.1**2)
+        # If any of these comparisons fail, than the function fails the test.
+
+    def test_values (self) :
+    """
+    Make sure value errors are raised when necessary. The first agrument is the exception class that shpudl be raised, the second is the  function, the remaining are arguments to the function.
+    """
+        self.assertRaises (ValueError, circle_area, -2)
+    
+    def test_types (self) :
+    """
+    Make sure type errors are raised when necessary
+    """
+        self.assertRaises (TypeError, circle_area, 3+5j)
+        self.assertRaises(TypeError, circle_area, True)
+        self assertRaises(TypeError, circle_area, "radius")
+```
+If we run the unittest again, we are alerted to out failures and we can fix them by returning to out circle_area function.
+```python
+from math import pi
+
+def circle_area(r):
+    if type(r) not in [int, float]:
+        raise TypeError ("The radius must be a non-negative real number.")
+    if r < 0:
+        raise ValueError ("The radius cannot be negative.")
+    return pi*(p**2)
+```
+If we run the test now, where should be no errors.
+
+As an aside, in this example we have used the assertAlmostEqual and assertRaises methods, but python has many more assert methods for unit testing. 
 
 ### 2. **Use Test-Driven Development (TDD)**
-   - **Write Tests First**: Start by writing tests for the behavior you want your code to have, then write the code to pass those tests. This approach helps ensure that your code meets the requirements and is less prone to bugs.
-   - **Refactor and Retest**: After making your code pass, refactor if necessary, running tests each time to ensure no functionality is broken.
+Essentially, TDD means writing tests for your code before you write your code. The tests are __failing tests__ and you slowly write code to pass the failing tests.
+   - **Write Tests First**: Start by writing tests for the behavior you want your code to have, then write the code to pass those tests. This approach helps ensure that your code meets the requirements and is less prone to bugs. The simplest approach is to write an automated unit-level test case that fails, then writing just enough code to make the test pass, then refactoring both the test code and the production code, then repeating with another new test case.
+   - **Refactor and Retest**: After making your code pass, refactor if necessary, running tests each time to ensure no functionality is broken. This tends to be where stuff breaks so be careful.
+   ![Alt text](https://upload.wikimedia.org/wikipedia/commons/0/0b/TDD_Global_Lifecycle.png)
+   The TDD steps are generally as follows. These are based on the book Test-Driven Development by Example,and Kent Beck's Canon TDD article.
 
+     1. List scenarios for the new feature
+   List the expected variants in the new behavior. “There’s the basic case & then what-if this service times out & what-if the key isn’t in the database yet &…” The developer can discover these specifications by asking about use cases and user stories. A key benefit of TDD is that it makes the developer focus on requirements before writing code. This is in contrast with the usual practice, where unit tests are only written after code.
+     2. Write a test for an item on the list
+   Write an automated test that would pass if the variant in the new behavior is met.
+     3. Run all tests. The new test should fail – for expected reasons
+   This shows that new code is actually needed for the desired feature. It validates that the test harness is working correctly. It rules out the possibility that the new test is flawed and will always pass.
+     4. Write the simplest code that passes the new test
+   Inelegant code and hard coding is acceptable. The code will be honed in Step 6. No code should be added beyond the tested functionality.
+     5. All tests should now pass
+   If any fail, fix failing tests with minimal changes until all pass.
+     6. Refactor as needed while ensuring all tests continue to pass
+   Code is refactored for readability and maintainability. In particular, hard-coded test data should be removed from the production code. Running the test suite after each refactor ensures that no existing functionality is broken. Examples of refactoring:
+
+        * moving code to where it most logically belongs
+        * removing duplicate code
+        * making names self-documenting
+        * splitting methods into smaller pieces
+        * re-arranging inheritance hierarchies
+
+Let's make a short example of TDD. Let's say we want to add numbers together. However, __before__ we write the function, we will write a test to check if 1 + 1 equals 2.
+
+```python
+assert 1 + 1 == 2
+```
+The `assert` keyword here is used to write test cases and to confirm that the program conditions are `True`. In other words, it allows us to validate the behavior and outputs of our code. When an assert statement fails, it raises an `AssertionError`, signaling an issue with the code. Such error would look like this:
+
+```
+AssertionError                      Traceback (most recent last)
+Cell In[2], line 1
+-> 1 assert 1 + 1 == 3
+AssertionError:
+```
+
+## ↓This is still a WIP↓ ##
 ### 3. **Use Code Coverage Tools**
    - Code coverage tools (like **`coverage.py`** or **`pytest-cov`**) show you which parts of your code were exercised by your tests. Aim for high coverage, but be careful not to focus solely on coverage numbers. A 100% coverage doesn’t guarantee that the code works correctly, but it helps identify untested code paths.
 
@@ -63,10 +231,11 @@ Testing Python code is important to help ensure your code runs as expected and i
 ### 9. **Review and Refine Tests Regularly**
    - **Regularly Update Tests**: As code evolves, review and update tests to ensure they remain relevant. Refactor tests when necessary to maintain clarity and coverage.
 
-Using these practices will help you build a robust suite of tests that can save time and reduce errors over time. Let me know if you'd like to dive deeper into any specific tools or testing concepts!
-
 
 ## Edge Cases Testing ##
+
+### What are edge cases? ### 
+Edge cases refer to unusual or extreme scenarios that occur at the boundaries of the expected input or behavior. These cases are important to consider during programming and testing to ensure robust and reliable code.
 
 Testing rare edge cases is crucial to making code resilient, especially when handling unusual inputs, edge conditions, or failure scenarios. Here’s how to effectively identify and test for edge cases:
 
@@ -242,8 +411,6 @@ print(sum_large_list(large_list))
 Using **Hypothesis** to generate a wide variety of input values, including edge cases automatically.
 
 ```python
-# Install hypothesis with `pip install hypothesis`
-
 from hypothesis import given, strategies as st
 
 @given(st.integers())
@@ -252,5 +419,3 @@ def test_is_even_property(number):
 
 # This will test is_even with a wide range of integers, including edge cases.
 ```
-
-These examples show how to handle and test for different edge cases, increasing the robustness of your code. If you'd like to see more on a particular type of edge case, feel free to ask!
