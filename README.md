@@ -1,7 +1,7 @@
 Testing Python code is important to help ensure your code runs as expected and is maintainable over time. 
 
    * [Best Practiced](#best-practiced)
-      * [1. <strong>Unit Testing</strong>](#1-write-unit-tests)
+      * [1. <strong>Unit Testing</strong>](#1-unit-testing)
       * [2. <strong>Use Test-Driven Development (TDD)</strong>](#2-use-test-driven-development-tdd)
       * [3. <strong>Use Code Coverage Tools</strong>](#3-use-code-coverage-tools)
       * [4. <strong>Organize Tests Well</strong>](#4-organize-tests-well)
