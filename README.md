@@ -61,7 +61,7 @@ Testing Python code is important to help ensure your code runs as expected and i
    Area of circles with r = -3 is 28.274333882308138.                           # negative radius?!
    Area of circles with r = (2+5j) is (-65.97344572538566+62.83185307179586j).  # tuple?!
    Area of circles with r = True is 3.141592653589793.                          # bool?!
-   Traceback (most recent call last):                                           # get this error becasue you used a string
+   Traceback (most recent call last):                                           # get this error because you used a string
    File "circles.py", line 11, in < module >
      A = circle_area(r) 
    File "circles.py", line 4, in circle_area
@@ -76,7 +76,7 @@ import unittest
 from circles import circle_area
 from math import pi
 
-class TestCircleArea (unittest. TestCase) :
+class TestCircleArea (unittest.TestCase) :
     def test_area (self) :
     """ 
     Test areas when radius >= 0 for several circles using `assertAlmostEqual`. The first value is the output of the circle_area function, and the second is the correct answer. The test compares the two up to the 7th decimal place.
@@ -128,6 +128,7 @@ To complete the testing and make sure a `TypeError` is raised when the input is 
 import unittest
 from circles import circle_area
 from math import pi
+
 class TestCircleArea (unittest. TestCase) :
     def test_area (self) :
     """ 
@@ -140,9 +141,9 @@ class TestCircleArea (unittest. TestCase) :
 
     def test_values (self) :
     """
-    Make sure value errors are raised when necessary. The first agrument is the exception class that shpudl be raised, the second is the  function, the remaining are arguments to the function.
+    Make sure value errors are raised when necessary. The first agrument is the exception class that should be raised, the second is the  function, the remaining are arguments to the function.
     """
-        self.assertRaises (ValueError, circle_area, -2)
+        self.assertRaises (ValueError, circle_area, -2)  # if the radius is a negative number
     
     def test_types (self) :
     """
@@ -150,7 +151,7 @@ class TestCircleArea (unittest. TestCase) :
     """
         self.assertRaises (TypeError, circle_area, 3+5j)
         self.assertRaises(TypeError, circle_area, True)
-        self assertRaises(TypeError, circle_area, "radius")
+        self assertRaises(TypeError, circle_area, "radius")  # if the radius is anything but an int, float
 ```
 If we run the unittest again, we are alerted to out failures and we can fix them by returning to out circle_area function.
 ```python
@@ -196,16 +197,41 @@ Essentially, TDD means writing tests for your code before you write your code. T
 Let's make a short example of TDD. Let's say we want to add numbers together. However, __before__ we write the function, we will write a test to check if 1 + 1 equals 2.
 
 ```python
-assert 1 + 1 == 2
+assert add(1, 1) == 2
 ```
 The `assert` keyword here is used to write test cases and to confirm that the program conditions are `True`. In other words, it allows us to validate the behavior and outputs of our code. When an assert statement fails, it raises an `AssertionError`, signaling an issue with the code. Such error would look like this:
 
+This will result in a NameError, indicating that no implementation exists, known as the "red" step. You get a NameError when you try to call a function or variable that has not been defined.
+
 ```
-AssertionError                      Traceback (most recent last)
-Cell In[2], line 1
--> 1 assert 1 + 1 == 3
+NameError             Traceback (most recent call last)
+Cell In[3], line 1
+    ---> 1 assert add(1, 1) == 2
+NameError: name 'add' is not defined
+```
+Now, it's time to implement the function. We can do this by defining the function:
+
+```python 
+def add(no1, no2):
+    return
+```
+Our function does not return anything yet. If we try running it, we now get a different error, and `AssertionError`:
+```
+AssertionError             Traceback (most recent call last)
+Cell In[6], line 4
+1 def (numi, num2) :
+2     return
+    ---> 4 assert add (1, 1) == 2
 AssertionError:
 ```
+This is because we defined a function that doesn't return anything, duh, so we get `AssertionError` because 1 + 1 does not equal 2 with our empty implementation. Finally, we can make it pass by correctly implementing the logic in the function as follows:
+```python
+def add (no1, no2):
+    return no1 + no2
+
+assert add(1, 1) == 2
+```
+
 
 ## ↓This is still a WIP↓ ##
 ### 3. **Use Code Coverage Tools**
